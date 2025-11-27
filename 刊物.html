@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彥豪品牌 & 露營結合</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --text-color: #1a1a1a;
+            --accent-color: #cd3d3d; /* 主題色 */
+        }
+        
+        body {
+            /* 調整字體堆疊：使用 Inter (英文) 和 Noto Sans TC (中文) 這些最標準的網路字體 */
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            opacity: 0; 
+            transition: opacity 0.5s;
+        }
+        body.ready {
+            opacity: 1; 
+        }
+
+        h1 {
+            /* 主標題保留 Abril Fatface 的視覺衝擊力 */
+            font-family: 'Abril+Fatface', serif;
+            text-transform: uppercase;
+        }
+        
+        /* 隱藏全域滾動條，但保留可滾動功能 */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        .img-parallax-container {
+            overflow: hidden;
+        }
+
+        .hero-bg-image-overlay {
+            /* 英雄區塊背景圖 */
+            background-image: url('https://tektro.com/upload/bOEG1AihWLN0hwdeF7Ip1764053057.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .hero-bg-image-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+        .hero-bg-image-overlay > * {
+            position: relative; 
+            z-index: 2;
+        }
+        
+        /* 第二區塊的背景圖樣式 (重點調整區域：改回白色背景) */
+        .content-image-box {
+            /* 圖片作為背景圖，設定不重複 */
+            background-image: url('https://tektro.com/upload/7pDIMRUNY8iayh3x9JPO1764206730.png');
+            background-repeat: no-repeat;
+            /* 圖片定位在右下角 */
+            background-position: right bottom; 
+            /* 圖片大小設定為佔容器寬度的 40%，且高度自動調整 (達到縮小效果) */
+            background-size: 40% auto; 
+            /* 容器的基礎顏色 (改回白色) */
+            background-color: white; 
+        }
+
+        /* 影片佔位符的樣式 */
+        .youtube-placeholder-link:hover .youtube-bg-image {
+            opacity: 0.9;
+        }
+        .youtube-placeholder-link:hover svg {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        
+        /* 縮圖單個項目樣式 */
+        .thumbnail-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: opacity 0.3s, filter 0.3s;
+            /* 確保填滿父容器的寬度 */
+            width: 100%; 
+            /* 調整為更緊湊的尺寸，從 80px 減少到 60px */
+            height: 60px; 
+            background-color: #111; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 2px;
+            margin-top: 2px;
+        }
+        
+        .thumbnail-item img {
+            /* 關鍵：使用 contain 讓圖片完整顯示，不裁切 */
+            object-fit: contain; 
+            filter: brightness(0.7); /* 讓非選中的縮圖變暗 */
+            transition: filter 0.5s, box-shadow 0.2s;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 活動狀態縮圖變亮，並有邊框 */
+        .thumbnail-item.active {
+            /* 使用內陰影作為邊框 */
+            box-shadow: 0 0 0 2px var(--accent-color) inset; 
+        }
+        .thumbnail-item.active img {
+            filter: brightness(1);
+        }
+
+    </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white">
+
+    <nav class="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-end items-center text-black/90">
+        <div class="text-xs tracking-widest uppercase nav-reveal">
+            <span id="scroll-progress-text">0%</span>
+        </div>
+    </nav>
+
+    <header class="relative w-full h-screen flex flex-col justify-center items-center overflow-hidden hero-bg-image-overlay">
+        <div class="relative z-10 text-center text-gray-800 px-6">
+            <h1 class="text-[3.5rem] sm:text-[5rem] md:text-[7rem] tracking-wider leading-tight font-black overflow-hidden">
+                <span class="inline-block title-reveal">彥豪&登山車&露營</span><br>
+            </h1>
+            <h2 class="text-3xl md:text-5xl leading-tight mt-6 opacity-0 translate-y-2" id="hero-sub-title">
+                TRP & CAMPING
+            </h2>
+        </div>
+
+        <div class="absolute bottom-10 left-6 text-gray-700 text-xs tracking-widest z-10 hidden md:block text-reveal">
+            SCROLL TO EXPLORE
+        </div>
+    </header>
+
+    <!-- 第二區塊：圖片縮小並移至右下方 (背景圖模式) -->
+    <section class="w-full py-8 md:py-12 px-6 md:px-12 bg-[#f4f4f4]">
+        
+        <!-- 容器：背景色已改為白色，圖片仍以 40% 尺寸置於右下角 -->
+        <div class="max-w-6xl mx-auto relative overflow-hidden rounded-xl shadow-2xl content-image-box min-h-[35vh]">
+            
+            <!-- 內容區塊：文字顏色調整為深色，以適應白色背景 -->
+            <div class="relative z-10 p-6 md:p-12 grid grid-cols-1 md:grid-cols-12 gap-12 text-gray-900">
+                
+                <!-- 1. 左側：大標題區塊 (佔 5 欄) -->
+                <div class="md:col-span-5">
+                    <div class="scroll-fade">
+                        <!-- 標題顏色改為深色 -->
+                        <h2 class="text-5xl md:text-7xl mb-4 leading-none text-gray-900 font-extrabold" style="font-family: 'Noto Sans TC', sans-serif;">
+                            露營的寧靜 <br>
+                            VS.<br>
+                            山野騎乘的<br>
+                            熱血
+                        </h2>
+                        <!-- 分隔線顏色改為深色 -->
+                        <div class="w-12 h-1 bg-gray-900 mb-4 mt-2"></div> 
+                        <!-- 副標題顏色改為中性深色 -->
+                        <p class="text-base md:text-lg uppercase tracking-widest italic text-gray-700 font-semibold">The tranquility of camping VS. the thrill of mountain riding</p>
+                    </div>
+                </div>
+                
+                <!-- 2. 右側：內容區塊 (佔 7 欄) -->
+                <div class="md:col-span-7 space-y-10 pt-4 md:pt-12">
+                    
+                    <!-- 文字內容 顏色改為深色 (已加粗 font-bold) -->
+                    <p class="text-base md:text-lg leading-relaxed scroll-fade text-gray-800 font-bold">
+                        「在對的場景享受大自然的寧靜，與登山車帶來的快感。」在曠野中，南投天時農莊的山路上試騎，比在城市裡感受更真實。EVO煞車的優點必須在「有挑戰性」的環境下才能真正被車友體會到。天時農莊的地形，對於新手相對簡單容易上手。
+                    </p>
+                    
+                    <!-- 文字內容 顏色改為深色 (已加粗 font-bold) -->
+                    <p class="text-base md:text-lg leading-relaxed scroll-fade text-gray-800 font-bold">
+                        然而，騎乘登山車不代表枯燥乏味，只要是對的場景對的人，也可以很熱鬧，這次活動我們與吉普車群族結合，除了登山車外，啤酒、小吃、派對，讓整個活動更加放鬆與盡興。「戶外派對試乘活動」不僅可以享受大自然的懷抱，也讓更多群組享受登山車的樂趣。
+                    </p>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- 圖片輪播區塊：已移除深色遮罩 -->
+    <section class="w-full h-screen relative bg-black text-white image-switcher-section overflow-hidden">
+        
+        <!-- 1. 主圖片和控制項區域 (現在佔滿整個 section) -->
+        <div class="h-full relative overflow-hidden">
+            
+            <!-- 1.1. 圖片幻燈片容器 -->
+            <div id="image-carousel-slides" class="w-full h-full relative">
+                <!-- 圖片將由 JavaScript 渲染 -->
+            </div>
+
+            <!-- 1.2. "活動照片" 標題 (靜態) -->
+            <div class="absolute top-6 left-6 md:top-10 md:left-10 z-30 text-white">
+                <h2 class="text-lg md:text-xl font-bold tracking-widest uppercase leading-none">
+                    活動照片
+                </h2>
+            </div>
+            
+        </div>
+        
+        <!-- 2. 縮圖側邊欄 (浮動在大圖上方) -->
+        <div id="thumbnail-sidebar" 
+             class="absolute top-1/2 right-0 transform -translate-y-1/2 
+                    w-[80px] md:w-[100px] 
+                    h-auto max-h-[80%] overflow-y-auto 
+                    bg-white/70 backdrop-blur-sm  <!-- 淺色半透明遮罩 (維持不變) -->
+                    hidden md:flex flex-col z-40 p-1 
+                    rounded-l-lg shadow-xl">
+            <!-- 垂直縮圖將由 JavaScript 渲染 -->
+        </div>
+
+
+        <!-- Mobile Indicators (底部圓點 - 保持不動) -->
+        <div id="carousel-indicators-mobile" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40 flex space-x-2 p-3 rounded-full backdrop-blur-sm md:hidden">
+            <!-- 圓點指示器將由 JavaScript 渲染 -->
+        </div>
+    </section>
+
+    <!-- 影片區塊 -->
+    <section class="w-full py-20 md:py-32 px-6 md:px-12 bg-white section-reveal">
+        <div class="max-w-5xl mx-auto text-center">
+            <!-- 替換主標題 -->
+            <h2 class="text-4xl md:text-5xl mb-12 leading-tight text-gray-900 font-bold scroll-fade">
+                【大山大景 x 露營 x 登山車 】
+            </h2>
+            
+            <!-- 影片容器：使用 Aspect Ratio 技巧保持 16:9 比例 -->
+            <div class="relative w-full overflow-hidden rounded-xl shadow-2xl bg-gray-900 transition duration-300" style="padding-top: 56.25%;">
+                <a href="https://www.youtube.com/watch?v=agbqpvFjRbw" 
+                    target="_blank" 
+                    class="youtube-placeholder-link absolute top-0 left-0 w-full h-full">
+                    <!-- 影片縮圖或靜態畫面 -->
+                    <img src="https://tektro.com/upload/U9IS0oWREizGkrYQ9MaO1764128333.JPG"
+                        alt="彥豪品牌越野體驗影片封面" 
+                        class="youtube-bg-image w-full h-full object-cover opacity-80 transition duration-300"
+                        onerror="this.onerror=null; this.src='https://placehold.co/1280x720/333/fff?text=TRP+Video+Unavailable'">
+                    
+                    <!-- 播放按鈕圖示 -->
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <!-- Play Button Icon (Triangle) -->
+                        <svg class="w-16 h-16 md:w-20 md:h-20 text-white opacity-90 transition duration-300" 
+                            fill="currentColor" 
+                            viewBox="0 0 24 24" 
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 4.757v14.486A1.75 1.75 0 0 0 8.784 20.32L19.29 12.83A1.75 1.75 0 0 0 19.29 11.17L8.784 3.68A1.75 1.75 0 0 0 6 4.757z"/>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- 內文區塊：置中對齊 -->
+            <div class="mt-12 text-gray-700 space-y-4 max-w-3xl mx-auto text-center">
+                <p class="text-base md:text-lg font-bold scroll-fade">
+                    在這片被磅礴山林環繞的土地上，我們不僅享受營地的寧靜，更是體驗了山野騎乘的熱血。
+                </p>
+                <p class="text-base md:text-lg font-bold scroll-fade">
+                    我們或許不是頂尖高手，但當在大自然的懷抱中踩踏，真的很難不愛上這份自由與暢快。
+                </p>
+                <p class="text-base md:text-lg font-bold scroll-fade"> 
+                    露營與登山車，就像美景搭配美酒，這種組合，讓人很難不愛上！
+                </p>
+            </div>
+            
+        </div>
+    </section>
+    
+    <div class="w-full py-3 bg-black flex justify-center items-center footer-reveal">
+        <img src="https://tektro.com/upload/HPxdYkh5toWGKsCyl90t1764051373.jpg" 
+            class="h-16 md:h-20" 
+            alt="Tektro Logo Footer"
+            onerror="this.onerror=null; this.src='https://placehold.co/300x50/000/fff?text=NEW+LOGO+ERROR'">
+    </div>
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('ready');
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- 滾動與英雄區塊動畫邏輯 (保持不變) ---
+        const heroTimeline = gsap.timeline({ defaults: { ease: "power2.out" } });
+        heroTimeline.addLabel("start")
+            .from(".nav-reveal", { y: -10, opacity: 0, duration: 0.8, stagger: 0.1, }, "start") 
+            .from(".text-reveal", { opacity: 0, y: 10, duration: 0.8, }, "start+=0.4")
+            .from(".title-reveal", { scale: 1.5, opacity: 0, duration: 1.5, stagger: 0.15, ease: "power3.out" }, "start+=0.3")
+            .to("#hero-sub-title", { opacity: 1, y: 0, duration: 1.0,}, "start+=1.2");
+
+        gsap.utils.toArray(".parallax-image").forEach(image => {
+            gsap.fromTo(image, 
+                { y: -50 }, 
+                { y: 50, ease: "none",
+                    scrollTrigger: {
+                        trigger: image.closest('.img-parallax-container'), 
+                        scrub: true, start: "top bottom", end: "bottom top",
+                    }
+                }
+            );
+        });
+
+        gsap.utils.toArray(".scroll-fade").forEach(element => {
+            gsap.from(element, {
+                opacity: 0, y: 30, duration: 1.2, ease: "power2.out",
+                scrollTrigger: { 
+                    trigger: element, 
+                    start: "top 85%", 
+                    toggleActions: "play reverse play reverse"
+                } 
+            });
+        });
+        
+        gsap.utils.toArray(".section-reveal").forEach(section => {
+            gsap.from(section, {
+                opacity: 0, y: 50, duration: 1.2, ease: "power2.out",
+                scrollTrigger: { 
+                    trigger: section, 
+                    start: "top 80%", 
+                    once: true 
+                } 
+            });
+        });
+
+        gsap.utils.toArray(".image-switcher-section").forEach(section => {
+            gsap.from(section, {
+                opacity: 0, y: 50, duration: 1.2, ease: "power2.out",
+                scrollTrigger: { 
+                    trigger: section, 
+                    start: "top 80%", 
+                    once: true 
+                } 
+            });
+        });
+        
+        gsap.to({}, {
+            scrollTrigger: {
+                scrub: true, start: 0, end: "max",
+                onUpdate: (self) => {
+                    const progressPercent = Math.round(self.progress * 100);
+                    document.getElementById('scroll-progress-text').textContent = `${progressPercent}%`;
+                }
+            }
+        });
+        
+        gsap.from(".footer-reveal", {
+            opacity: 0, y: 30, duration: 1, ease: "power1.out",
+            scrollTrigger: { 
+                trigger: ".footer-reveal", 
+                start: "top 95%", 
+                toggleActions: "play reverse play reverse" 
+            } 
+        });
+
+        // --- 圖片輪播邏輯 ---
+        
+        // 原始圖片列表 (已更新並保留)
+        const originalImages = [
+            { id: 1, url: 'https://tektro.com/upload/XFQccoeM87VLBSM8VgCe1764211561.jpg', alt: '露營與登山車活動照片 1' },
+            { id: 2, url: 'https://tektro.com/upload/zuW9Tp7nQVmMZU5y4j7T1764211547.jpg', alt: '露營與登山車活動照片 2' },
+            { id: 3, url: 'https://tektro.com/upload/WcxIYhGQVOgJMf0OYdK71764211530.jpg', alt: '露營與登山車活動照片 3' },
+            { id: 4, url: 'https://tektro.com/upload/igERuc8PSM9J5wzoBmri1764211512.jpg', alt: '露營與登山車活動照片 4' },
+            { id: 5, url: 'https://tektro.com/upload/7BC3OKG8kp7NizrrVo1t1764211493.jpg', alt: '露營與登山車活動照片 5' },
+            { id: 6, url: 'https://tektro.com/upload/L6z9bR5eIuKQbuN0wUST1764211476.jpg', alt: '露營與登山車活動照片 6' },
+            { id: 7, url: 'https://tektro.com/upload/MD6vJWBTiu6uElJz5r4g1764211453.jpg', alt: '露營與登山車活動照片 7' },
+            { id: 8, url: 'https://tektro.com/upload/lQn0Td4w6JTjv1BoRDQ91764211431.jpg', alt: '露營與登山車活動照片 8' },
+            { id: 9, url: 'https://tektro.com/upload/4fJnEuhbKObxxPiZrIJ41764211379.jpg', alt: '露營與登山車活動照片 9' },
+            { id: 10, url: 'https://tektro.com/upload/tzLl0bmM9dQcjdMhfjrB1764211411.jpg', alt: '露營與登山車活動照片 10' },
+        ];
+        
+        // **關鍵修改：將陣列順序反轉**
+        const dynamicImages = originalImages.reverse();
+
+
+        let currentIndex = 0;
+        let autoPlayInterval;
+        const carouselSlidesContainer = document.getElementById('image-carousel-slides'); 
+        const sidebarContainer = document.getElementById('thumbnail-sidebar'); // 垂直縮圖側欄
+        const mobileIndicatorsContainer = document.getElementById('carousel-indicators-mobile');
+        
+        const DURATION = 0.8; // 圖片淡入淡出時間
+        const AUTO_PLAY_DELAY = 2000; // 自動播放間隔 (2 秒)
+
+        function renderSlides() {
+            // 1. 渲染主圖片幻燈片 
+            carouselSlidesContainer.innerHTML = dynamicImages.map((img, index) => `
+                <div class="absolute inset-0 w-full h-full slide-item" 
+                    style="opacity: ${index === currentIndex ? 1 : 0}; z-index: ${index === currentIndex ? 20 : 10};">
+                    <!-- 確保主圖使用 object-cover 佔滿空間 -->
+                    <img src="${img.url}" alt="${img.alt}" class="w-full h-full object-cover"
+                        onerror="this.onerror=null; this.src='https://placehold.co/1920x1080/000/fff?text=Image+Error+${index + 1}'"
+                    />
+                    <!-- 圖片上方的漸變遮罩已移除，讓圖片完整顯示 -->
+                </div>
+            `).join('');
+
+            // 2. 渲染浮動縮圖側欄 (Desktop only)
+            sidebarContainer.innerHTML = dynamicImages.map((img, index) => `
+                <div class="thumbnail-item ${index === currentIndex ? 'active' : ''}" 
+                    data-index="${index}" 
+                    onclick="showSlide(${index})">
+                    <!-- 縮圖內的圖片將使用 object-contain 確保不裁切 -->
+                    <img src="${img.url}" alt="${img.alt}" />
+                </div>
+            `).join('');
+
+            // 3. 渲染底部指示圓點 (Mobile only)
+            mobileIndicatorsContainer.innerHTML = dynamicImages.map((_, index) => `
+                <div class="w-2.5 h-2.5 rounded-full cursor-pointer transition-all indicator-dot" 
+                    data-index="${index}" 
+                    style="background-color: ${index === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.5)'};"
+                    onclick="showSlide(${index})">
+                </div>
+            `).join('');
+        }
+
+        function showSlide(index) {
+            // 確保 index 在範圍內循環
+            currentIndex = (index + dynamicImages.length) % dynamicImages.length;
+
+            const slides = document.querySelectorAll('#image-carousel-slides .slide-item');
+            const thumbnails = document.querySelectorAll('#thumbnail-sidebar .thumbnail-item');
+            const mobileDots = document.querySelectorAll('#carousel-indicators-mobile .indicator-dot');
+
+            slides.forEach((slide, i) => {
+                const isCurrent = i === currentIndex;
+                
+                // 使用 GSAP 進行平滑淡入淡出
+                gsap.to(slide, {
+                    opacity: isCurrent ? 1 : 0,
+                    // 確保目前顯示的圖片在最上層
+                    zIndex: isCurrent ? 20 : 10,
+                    duration: DURATION,
+                });
+            });
+
+            // 更新縮圖和圓點的活動狀態
+            thumbnails.forEach((thumbnail, i) => {
+                thumbnail.classList.toggle('active', i === currentIndex);
+            });
+            mobileDots.forEach((dot, i) => {
+                dot.style.backgroundColor = i === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.5)';
+            });
+
+            // 確保縮圖側欄會自動滾動到活動圖片 (UX 提升)
+            const activeThumbnail = document.querySelector('#thumbnail-sidebar .thumbnail-item.active');
+            if (activeThumbnail && sidebarContainer) {
+                // 讓活動縮圖在側欄中盡量置中顯示
+                const offset = activeThumbnail.offsetTop - sidebarContainer.offsetHeight / 2 + activeThumbnail.offsetHeight / 2;
+                sidebarContainer.scrollTop = offset;
+            }
+        }
+        
+        // 暴露給全域環境，讓 onclick 能調用
+        window.showSlide = (index) => {
+            clearInterval(autoPlayInterval);
+            showSlide(index);
+            startAutoPlay();
+        };
+
+        function nextSlide() {
+            showSlide(currentIndex + 1);
+        }
+
+        function startAutoPlay() {
+            clearInterval(autoPlayInterval); // 清除舊的計時器
+            autoPlayInterval = setInterval(nextSlide, AUTO_PLAY_DELAY);
+        }
+
+        // 啟動輪播
+        renderSlides();
+        startAutoPlay();
+    });
+</script>
